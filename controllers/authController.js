@@ -65,30 +65,32 @@ exports.registerUser = async(req,res) =>{
 
 exports.loginUser = async(req,res) =>{
     const { email,password,role_id } = req.body;
+    console.log("Body;",req.body);
     let connection
 
     try {
         if(!email){
-            return res.status(404).json({message:'Email is required'})
+            return res.status(400   ).json({message:'Email is required'})
         }
         if(!password){
-            return res.status(404).json({message:'Password is required'});
+            return res.status(400   ).json({message:'Password is required'});
         }
         if(!role_id){
-            return res.status(404).json({message:'Role Id is required'});
+            return res.status(400   ).json({message:'Role Id is required'});
         }
         
         connection = await pool.getConnection()
         
         //check if user already exists or not
         const [user] = await connection.query(
-            "SELECT id FROM users WHERE email = ? OR role_id = ?",
+            "SELECT * FROM users WHERE email = ? AND role_id = ?",
             [email,role_id]
         )
+        console.log("User:",user);
         if (user.length === 0) {
           return res
             .status(401)
-            .json({ message: "Invalid email/mobile or password" });
+            .json({ message: "Invalid email, password or role" });
         }
         const userData = user[0]
 
@@ -105,12 +107,13 @@ exports.loginUser = async(req,res) =>{
             {
                 id:userData.id,
                 email:userData.email,
-                role_id:userData.password
+                role_id:userData.role_id
             },
             process.env.JWT_SECRET,
             { expiresIn:'24h' }
         )
         res.status(200).json({
+            message:'User logged in successfully',
             token,
             user:{
                 id:userData.id,
