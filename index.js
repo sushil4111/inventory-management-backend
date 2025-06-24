@@ -16,7 +16,7 @@ app.use(cors({
 
 app.use(express.json());
 
-app.post('/',async(req,res)=>{
+app.get('/',async(req,res)=>{
     res.send("Hello inventory backend");
 })
 
